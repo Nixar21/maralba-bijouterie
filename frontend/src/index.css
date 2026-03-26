@@ -1,0 +1,114 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --cream: #FAF7F2;
+  --gold: #C8A96E;
+  --gold-dark: #A8893E;
+  --charcoal: #2C2C2C;
+  --gray: #888;
+  --light-gray: #F0EDE8;
+  --white: #FFFFFF;
+  --danger: #C0392B;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Jost', sans-serif;
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
+  --shadow-hover: 0 8px 32px rgba(0,0,0,0.14);
+  --radius: 12px;
+  --transition: 0.25s ease;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--cream);
+  color: var(--charcoal);
+  line-height: 1.6;
+}
+
+a { color: inherit; text-decoration: none; }
+
+button {
+  cursor: pointer;
+  font-family: var(--font-body);
+  border: none;
+  transition: all var(--transition);
+}
+
+img { max-width: 100%; display: block; }
+
+/* Botones */
+.btn-primary {
+  background: var(--charcoal);
+  color: var(--white);
+  padding: 12px 28px;
+  border-radius: 6px;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.btn-primary:hover { background: var(--gold); transform: translateY(-1px); }
+
+.btn-gold {
+  background: var(--gold);
+  color: var(--white);
+  padding: 12px 28px;
+  border-radius: 6px;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.btn-gold:hover { background: var(--gold-dark); }
+
+.btn-outline {
+  background: transparent;
+  color: var(--charcoal);
+  border: 1.5px solid var(--charcoal);
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.btn-outline:hover { background: var(--charcoal); color: var(--white); }
+
+.btn-danger {
+  background: var(--danger);
+  color: var(--white);
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+/* Layout */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* Inputs */
+input, textarea, select {
+  font-family: var(--font-body);
+  border: 1.5px solid #E0DBD3;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  width: 100%;
+  background: var(--white);
+  color: var(--charcoal);
+  transition: border var(--transition);
+}
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+/* Loading */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  font-size: 15px;
+  color: var(--gray);
+  letter-spacing: 2px;
+}
