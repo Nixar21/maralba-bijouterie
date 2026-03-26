@@ -2,15 +2,28 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import Cart from './Cart'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+    import.meta.env.VITE_SUPABASE_URL,
+    import.meta.env.VITE_SUPABASE_ANON_KEY
+)
+
+const ADMIN_EMAIL = 'nicolas.agustin.y@gmail.com' // ← mismo email que en Login.jsx
 
 export default function Navbar() {
     const { count } = useCart()
     const [cartOpen, setCartOpen] = useState(false)
-    const isAdmin = !!localStorage.getItem('maralba_token')
     const navigate = useNavigate()
 
-    const handleLogout = () => {
+    const token = localStorage.getItem('maralba_token')
+    const user = JSON.parse(localStorage.getItem('maralba_user') || 'null')
+    const isAdmin = user?.email === ADMIN_EMAIL
+
+    const handleLogout = async () => {
+    await supabase.auth.signOut()
     localStorage.removeItem('maralba_token')
+    localStorage.removeItem('maralba_user')
     navigate('/')
     window.location.reload()
     }
@@ -52,23 +65,35 @@ export default function Navbar() {
             </Link>
 
           {/* Nav links */}
-            <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
             <Link to="/" style={{ fontSize: 13, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--gray)' }}>
                 Tienda
             </Link>
-            {isAdmin ? (
+
+            {token ? (
                 <>
-                <Link to="/admin" style={{ fontSize: 13, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--gold)' }}>
-                    Admin
-                </Link>
+                {isAdmin && (
+                    <Link to="/admin" style={{ fontSize: 13, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--gold)' }}>
+                    Panel
+                    </Link>
+                )}
+                <span style={{ fontSize: 13, color: 'var(--gray)' }}>
+                    {user?.user_metadata?.nombre || user?.email}
+                </span>
                 <button onClick={handleLogout} style={{
                     background: 'none', border: 'none', fontSize: 13,
-                    letterSpacing: 1, textTransform: 'uppercase', color: 'var(--gray)', cursor: 'pointer'
+                    letterSpacing: 1, textTransform: 'uppercase',
+                    color: 'var(--gray)', cursor: 'pointer'
                 }}>Salir</button>
                 </>
             ) : (
-                <Link to="/login" style={{ fontSize: 13, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--gray)' }}>
-                Admin
+                <Link to="/login" style={{
+                fontSize: 13, letterSpacing: 1,
+                textTransform: 'uppercase', color: 'var(--charcoal)',
+                border: '1.5px solid var(--charcoal)',
+                padding: '8px 18px', borderRadius: 6,
+                }}>
+                Iniciar sesión
                 </Link>
             )}
 
@@ -76,7 +101,7 @@ export default function Navbar() {
             <button onClick={() => setCartOpen(true)} style={{
                 background: 'none', border: 'none', position: 'relative',
                 display: 'flex', alignItems: 'center', gap: 6,
-                fontSize: 13, letterSpacing: 1, textTransform: 'uppercase',
+                fontSize: 13, letterSpacing: 1, cursor: 'pointer',
             }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>

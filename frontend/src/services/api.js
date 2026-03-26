@@ -2,7 +2,6 @@ import axios from 'axios'
 
 const API = axios.create({ baseURL: import.meta.env.VITE_API_URL })
 
-// Adjuntar token si existe
 API.interceptors.request.use(config => {
     const token = localStorage.getItem('maralba_token')
     if (token) config.headers.Authorization = `Bearer ${token}`
@@ -24,3 +23,9 @@ export const deleteProduct = (id) => API.delete(`/api/products/${id}`)
 
 export const login = (email, password) =>
     API.post('/api/auth/login', { email, password })
+
+export const createOrder = (orderData) =>
+    API.post('/api/orders', orderData)
+
+export const getOrders = () =>
+    API.get('/api/orders')

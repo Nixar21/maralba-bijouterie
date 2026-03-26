@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { getProducts, createProduct, updateProduct, deleteProduct } from '../services/api'
+import PedidosList from '../components/PedidosList'
 
 const EMPTY_FORM = { nombre: '', descripcion: '', precio: '', stock: '', categoria: '', imagen: null }
 
@@ -164,7 +165,14 @@ export default function AdminPanel() {
             </div>
             ))}
         </div>
-        </div>
+
+        {/* Sección pedidos — DENTRO del container */}
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 400, margin: '60px 0 24px' }}>
+            Pedidos recibidos
+        </h2>
+        <PedidosList />
+
+      </div>  {/* ← cierre del container */}
     </main>
     )
 }
