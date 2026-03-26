@@ -1,15 +1,9 @@
 import express from 'express'
 import { supabase } from '../config/supabase.js'
 import { requireAuth } from '../middleware/authMiddleware.js'
-import { MercadoPagoConfig, Preference } from 'mercadopago'
 
 const router = express.Router()
 
-const mp = new MercadoPagoConfig({
-    accessToken: process.env.MP_ACCESS_TOKEN
-})
-
-// POST /api/orders — crear pedido y preferencia de MP
 router.post('/', requireAuth, async (req, res) => {
     const {
     nombre_completo, direccion, ciudad,
@@ -17,28 +11,48 @@ router.post('/', requireAuth, async (req, res) => {
     } = req.body
 
     try {
-    // 1. Crear preferencia en Mercado Pago
-    const preference = new Preference(mp)
-    const mpData = await preference.create({
+    console.log('Creando pedido para:', req.user.email)
+    console.log('Productos:', productos)
+
+    // Crear preferencia en Mercado Pago
+    let mpPreferenceId = null
+    let mpInitPoint = null
+
+    try {
+        const { MercadoPagoConfig, Preference } = await import('mercadopago')
+        const mp = new MercadoPagoConfig({
+        accessToken: process.env.MP_ACCESS_TOKEN
+        })
+
+        const preference = new Preference(mp)
+        const mpData = await preference.create({
         body: {
-        items: productos.map(p => ({
+            items: productos.map(p => ({
             title: p.nombre,
             unit_price: Number(p.precio),
             quantity: Number(p.qty),
             currency_id: 'ARS'
-        })),
-        payer: { email: req.user.email },
-        back_urls: {
+            })),
+            payer: { email: req.user.email },
+            back_urls: {
             success: `${process.env.FRONTEND_URL}/pedido/exito`,
             failure: `${process.env.FRONTEND_URL}/pedido/error`,
             pending: `${process.env.FRONTEND_URL}/pedido/pendiente`
-        },
-        auto_return: 'approved',
-        notification_url: `${process.env.BACKEND_URL}/api/orders/webhook`
+            },
+            auto_return: 'approved'
         }
-    })
+        })
 
-    // 2. Guardar pedido en Supabase
+        mpPreferenceId = mpData.id
+        mpInitPoint = mpData.init_point
+        console.log('Preferencia MP creada:', mpPreferenceId)
+
+    } catch (mpError) {
+        console.error('Error con Mercado Pago:', mpError.message)
+      // Continuamos sin MP para guardar el pedido igual
+    }
+
+    // Guardar pedido en Supabase
     const { data, error } = await supabase
         .from('pedidos')
         .insert([{
@@ -53,24 +67,29 @@ router.post('/', requireAuth, async (req, res) => {
         productos,
         total,
         estado: 'pendiente',
-        mp_preference_id: mpData.id
+        mp_preference_id: mpPreferenceId
         }])
         .select()
         .single()
 
-    if (error) throw error
+    if (error) {
+        console.error('Error guardando pedido en Supabase:', error)
+        return res.status(500).json({ error: error.message })
+    }
+
+    console.log('Pedido guardado:', data.id)
 
     res.json({
         pedido: data,
-      mp_init_point: mpData.init_point  // URL de pago de MP
+        mp_init_point: mpInitPoint
     })
+
     } catch (err) {
-    console.error(err)
-    res.status(500).json({ error: 'Error creando el pedido' })
+    console.error('Error general en orders:', err)
+    res.status(500).json({ error: err.message })
     }
 })
 
-// POST /api/orders/webhook — Mercado Pago notifica el pago
 router.post('/webhook', async (req, res) => {
     const { type, data } = req.body
     if (type === 'payment') {
@@ -82,7 +101,6 @@ router.post('/webhook', async (req, res) => {
     res.sendStatus(200)
 })
 
-// GET /api/orders — admin ve todos los pedidos
 router.get('/', requireAuth, async (req, res) => {
     const { data, error } = await supabase
     .from('pedidos')
