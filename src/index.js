@@ -9,9 +9,8 @@ const PORT = process.env.PORT || 3001
 
 app.use(cors({
     origin: function(origin, callback) {
-    // Permitir cualquier subdominio de vercel.app y localhost
-    if (!origin || 
-        origin.includes('vercel.app') || 
+    if (!origin ||
+        origin.includes('vercel.app') ||
         origin.includes('localhost')) {
         callback(null, true)
     } else {
@@ -20,6 +19,7 @@ app.use(cors({
     },
     credentials: true
 }))
+
 app.use(express.json())
 
 app.get('/', (req, res) => res.json({ message: 'API Maralba Bijouterie 💎' }))
@@ -28,41 +28,3 @@ app.use('/api/auth', authRouter)
 app.use('/api/orders', ordersRouter)
 
 app.listen(PORT, () => console.log(`🚀 Servidor en puerto ${PORT}`))
-
-app.get('/debug', (req, res) => {
-    res.json({
-    supabaseUrl: process.env.SUPABASE_URL ? 'OK' : 'FALTA',
-    serviceKey: process.env.SUPABASE_SERVICE_KEY ? 'OK' : 'FALTA',
-    port: process.env.PORT || 'no definido'
-    })
-})
-
-app.get('/debug-supabase', async (req, res) => {
-    try {
-    const { createClient } = await import('@supabase/supabase-js')
-    const client = createClient(
-        process.env.SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_KEY
-    )
-    const { data, error } = await client.from('productos').select('count')
-    if (error) return res.json({ error: error.message, code: error.code })
-    res.json({ ok: true, data })
-    } catch (err) {
-    res.json({ error: err.message, stack: err.stack?.split('\n')[0] })
-    }
-})
-
-app.get('/debug-fetch', async (req, res) => {
-    try {
-    const response = await fetch(`${process.env.SUPABASE_URL}/rest/v1/productos?select=count`, {
-        headers: {
-        'apikey': process.env.SUPABASE_SERVICE_KEY,
-        'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`
-        }
-    })
-    const text = await response.text()
-    res.json({ status: response.status, body: text })
-    } catch (err) {
-    res.json({ error: err.message, cause: err.cause?.message || 'sin causa' })
-    }
-})
