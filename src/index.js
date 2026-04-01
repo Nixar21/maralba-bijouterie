@@ -8,10 +8,17 @@ const app = express()
 const PORT = process.env.PORT || 3001
 
 app.use(cors({
-    origin: [
-    'http://localhost:5173',
-    'https://maralba-bijouterie-accesorios.vercel.app'
-    ]
+    origin: function(origin, callback) {
+    // Permitir cualquier subdominio de vercel.app y localhost
+    if (!origin || 
+        origin.includes('vercel.app') || 
+        origin.includes('localhost')) {
+        callback(null, true)
+    } else {
+        callback(new Error('No permitido por CORS'))
+    }
+    },
+    credentials: true
 }))
 app.use(express.json())
 
