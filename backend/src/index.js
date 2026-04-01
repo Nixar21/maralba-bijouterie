@@ -21,3 +21,11 @@ app.use('/api/auth', authRouter)
 app.use('/api/orders', ordersRouter)
 
 app.listen(PORT, () => console.log(`🚀 Servidor en puerto ${PORT}`))
+
+app.get('/debug', (req, res) => {
+    res.json({
+    supabaseUrl: process.env.SUPABASE_URL ? 'OK' : 'FALTA',
+    serviceKey: process.env.SUPABASE_SERVICE_KEY ? 'OK' : 'FALTA',
+    port: process.env.PORT || 'no definido'
+    })
+})
