@@ -44,3 +44,18 @@ app.get('/debug-supabase', async (req, res) => {
     res.json({ error: err.message, stack: err.stack?.split('\n')[0] })
     }
 })
+
+app.get('/debug-fetch', async (req, res) => {
+    try {
+    const response = await fetch(`${process.env.SUPABASE_URL}/rest/v1/productos?select=count`, {
+        headers: {
+        'apikey': process.env.SUPABASE_SERVICE_KEY,
+        'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`
+        }
+    })
+    const text = await response.text()
+    res.json({ status: response.status, body: text })
+    } catch (err) {
+    res.json({ error: err.message, cause: err.cause?.message || 'sin causa' })
+    }
+})
