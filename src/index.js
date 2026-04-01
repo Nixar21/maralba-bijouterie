@@ -29,3 +29,18 @@ app.get('/debug', (req, res) => {
     port: process.env.PORT || 'no definido'
     })
 })
+
+app.get('/debug-supabase', async (req, res) => {
+    try {
+    const { createClient } = await import('@supabase/supabase-js')
+    const client = createClient(
+        process.env.SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_KEY
+    )
+    const { data, error } = await client.from('productos').select('count')
+    if (error) return res.json({ error: error.message, code: error.code })
+    res.json({ ok: true, data })
+    } catch (err) {
+    res.json({ error: err.message, stack: err.stack?.split('\n')[0] })
+    }
+})
